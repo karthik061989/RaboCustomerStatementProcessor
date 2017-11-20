@@ -48,7 +48,7 @@ public class RaboCustomerStatementController {
 
 	/**
 	 *
-	 * This controller method is used to process the customer statements and
+	 * This controller method is to perform process the customer statements and
 	 * provide the error report.
 	 *
 	 * @param response
@@ -87,7 +87,7 @@ public class RaboCustomerStatementController {
 
 	/**
 	 *
-	 * This method is used to set server exception
+	 * This method is to perform set server exception
 	 *
 	 * @param response
 	 * @param printWriter
@@ -106,7 +106,7 @@ public class RaboCustomerStatementController {
 
 	/**
 	 *
-	 * This method is used to set client exception
+	 * This method is to perform set client exception
 	 *
 	 * @param response
 	 * @param printWriter
@@ -125,7 +125,7 @@ public class RaboCustomerStatementController {
 
 	/**
 	 *
-	 * This method is used to set server exception
+	 * This method is to perform set server exception
 	 *
 	 * @param response
 	 * @param printWriter
@@ -140,7 +140,7 @@ public class RaboCustomerStatementController {
 
 	/**
 	 *
-	 * This method is used to get file type
+	 * This method is to perform get file type
 	 *
 	 * @param file
 	 */
@@ -152,7 +152,7 @@ public class RaboCustomerStatementController {
 
 	/**
 	 *
-	 * This method is used to write success message on the response.
+	 * This method is to perform write success message on the response.
 	 *
 	 * @param map
 	 * @param response
@@ -168,7 +168,7 @@ public class RaboCustomerStatementController {
 		builder.append("<CAPTION><EM>Report</EM></CAPTION>");
 		builder.append("<TR><TH>Reference</TH><TH>Description</TH></TR>");
 		for (String key : map.keySet()) {
-			builder.append("<TR><TD>").append(key).append("</TD>").append("<TD>").append(map.get(key))
+			builder.append("<TR><TD>").append(key.substring(0, key.indexOf(Constants.UNDER_SCORE))).append("</TD>").append("<TD>").append(map.get(key))
 					.append("</TD></TR>");
 		}
 		builder.append("</TABLE></DIV>");

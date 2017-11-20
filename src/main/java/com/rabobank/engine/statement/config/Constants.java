@@ -18,6 +18,7 @@ public class Constants {
 	public static final String CSV_FILETYPE = ".csv";
 	public static final String XML_FILETYPE = ".xml";
 	public static final String COMMA = ",";
+	public static final String UNDER_SCORE = "_";
 	public static final int IBANNUMBER_MIN_SIZE = 15;
 	public static final int IBANNUMBER_MAX_SIZE = 34;
 	public static final BigInteger IBANNUMBER_MAGIC_NUMBER = new BigInteger("97");

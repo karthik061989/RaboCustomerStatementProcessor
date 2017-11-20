@@ -6,21 +6,24 @@ package com.rabobank.engine.statement.manager;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.rabobank.engine.statement.config.Constants;
 import com.rabobank.engine.statement.config.Utility;
 import com.rabobank.engine.statement.exception.ClientException;
 import com.rabobank.engine.statement.model.Record;
 import com.rabobank.engine.statement.model.Records;
 
 /**
- * This manager class is used to validate records and check end balance.
+ * This manager class is to perform validate records, unique reference and check end balance.
  *
  * @author KARTHIK
  */
@@ -34,7 +37,7 @@ public class RaboCustomerStatementManagerImpl implements RaboCustomerStatementMa
 
 	/**
 	 *
-	 * This method used to validate records and check end balance.
+	 * This method is to validate records and check end balance.
 	 *
 	 * @param records
 	 * @throws ClientException
@@ -46,28 +49,62 @@ public class RaboCustomerStatementManagerImpl implements RaboCustomerStatementMa
 			throw new ClientException("RABO1013");
 		}
 		List<Record> recordList = records.getRecordList();
+		Set<String> reference=new HashSet<>();
 		for (Record record : recordList) {
-			validateId(record, recordList);
+			validateId(record);
 			validateAccountNumber(record);
 			validateDescription(record);
 			validateStartEndAndMutationValue(record);
 			formatStartEndMutationValue(record);
-			checkEndBalance(errorMap, record);
+			getErrorReports(errorMap, recordList, reference, record);
 		}
 
 		logger.info("Manager call end");
 		return errorMap;
 	}
 
-	private void checkEndBalance(Map<String, String> errorMap, Record record) {
-		logger.info("Check end balance");
-		Double caluculatedEndValue = utility.formatDouble(record.getStartBalance() + record.getMutation());
-		if (caluculatedEndValue.compareTo(record.getEndBalance()) != 0) {
-			errorMap.put(record.getId(),
-					"The end balance " + record.getEndBalance() + " is wrong. The correct value is " + caluculatedEndValue);
+	/**
+	 * This method is to perform check reference and end balance.  
+	 * 
+	 * @param errorMap
+	 * @param recordList
+	 * @param reference
+	 * @param record
+	 */
+	private void getErrorReports(Map<String, String> errorMap, List<Record> recordList, Set<String> reference,
+			Record record) {
+		StringBuilder builder=new StringBuilder();			
+		int count=Collections.frequency(recordList, record);			
+		if( count> 1 && !reference.contains(record.getId())){
+			reference.add(record.getId());
+			builder.append("The reference should be unique.It occours ").append(count).append(" times in the uploaded file.\n");
+		}
+		checkEndBalance(record,builder);
+		if(builder.length()>0){
+			errorMap.put(record.getId().concat(Constants.UNDER_SCORE).concat(record.getAccountNumber()), builder.toString());
 		}
 	}
 
+	/**
+	 * This method is to perform check end balance  
+	 * 
+	 * @param record
+	 * @param builder
+	 */
+	private void checkEndBalance(Record record,StringBuilder builder) {
+		logger.info("Check end balance");
+		Double caluculatedEndValue = utility.formatDouble(record.getStartBalance() + record.getMutation());
+		if (caluculatedEndValue.compareTo(record.getEndBalance()) != 0) {
+			builder.append("The end balance ").append(record.getEndBalance()).append(" is wrong for the accountNumber ").append(record.getAccountNumber()).append(".");
+			builder.append(" The correct value is (").append(record.getStartBalance()).append(Constants.COMMA).append(record.getMutation()).append(")").append("=").append(caluculatedEndValue);			
+		}
+	}
+
+	/**
+	 * This method is to perform format start/end/mutation. 
+	 * 
+	 * @param record
+	 */
 	private void formatStartEndMutationValue(Record record) {
 		logger.info("Format start/end/mutation value");
 		record.setStartBalance(utility.formatDouble(record.getStartBalance()));
@@ -75,6 +112,12 @@ public class RaboCustomerStatementManagerImpl implements RaboCustomerStatementMa
 		record.setEndBalance(utility.formatDouble(record.getEndBalance()));
 	}
 
+	/**
+	 * This method is to perform validate start/end/mutation is null.  
+	 * 
+	 * @param record
+	 * @throws ClientException
+	 */
 	private void validateStartEndAndMutationValue(Record record) throws ClientException {
 		logger.info("Validate start/end/mutation");
 		if (null == record.getStartBalance()) {
@@ -86,6 +129,12 @@ public class RaboCustomerStatementManagerImpl implements RaboCustomerStatementMa
 		}
 	}
 
+	/**
+	 * This method is to perform validate description is null or empty and size. 
+	 * 
+	 * @param record
+	 * @throws ClientException
+	 */
 	private void validateDescription(Record record) throws ClientException {
 		logger.info("Validate description");
 		if (utility.isNullOrEmpty(record.getDescription())) {
@@ -95,6 +144,12 @@ public class RaboCustomerStatementManagerImpl implements RaboCustomerStatementMa
 		}
 	}
 
+	/**
+	 * This method is to perform validate account number is null or empty and IBAN. 
+	 * 
+	 * @param record
+	 * @throws ClientException
+	 */
 	private void validateAccountNumber(Record record) throws ClientException {
 		logger.info("Validate account number");
 		if (utility.isNullOrEmpty(record.getAccountNumber())) {
@@ -104,14 +159,18 @@ public class RaboCustomerStatementManagerImpl implements RaboCustomerStatementMa
 		}
 	}
 
-	private void validateId(Record record, List<Record> recordList) throws ClientException {
+	/**
+	 * This method is to perform validate reference number.
+	 *  
+	 * @param record
+	 * @throws ClientException
+	 */
+	private void validateId(Record record) throws ClientException {
 		logger.info("Validate reference");
 		if (utility.isNullOrEmpty(record.getId())) {
 			throw new ClientException("RABO1001");
 		} else if (!utility.isNumeric(record.getId())) {
 			throw new ClientException("RABO1002");
-		} else if (Collections.frequency(recordList, record) > 1) {
-			throw new ClientException("RABO1003");
-		}
+		} 
 	}
 }
