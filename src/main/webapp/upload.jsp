@@ -9,9 +9,6 @@ ransitional//EN" "http://www.w3.org/
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>RaboBank Customer Statement Processor</title>
-<link rel="stylesheet" href="../css/style.css" type="text/css"></link>
-<script language="JavaScript" type="text/JavaScript" 
-src="../script/validate.js"></script>
 </head>
 
 
