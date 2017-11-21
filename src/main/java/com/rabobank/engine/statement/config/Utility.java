@@ -139,10 +139,7 @@ public class Utility {
 		logger.info("Check IBAN number");
 		String newAccountNumber = accountNumber.trim();
 
-		// Check that the total IBAN length is correct as per the country. If
-		// not, the
-		// IBAN is invalid. We could also check
-		// for specific length according to country, but for now we won't
+		// Check that the total IBAN length is correct as per the country. If not, the IBAN is invalid.
 		if (newAccountNumber.length() < Constants.IBANNUMBER_MIN_SIZE
 				|| newAccountNumber.length() > Constants.IBANNUMBER_MAX_SIZE) {
 			return false;
@@ -152,16 +149,14 @@ public class Utility {
 		newAccountNumber = newAccountNumber.substring(4) + newAccountNumber.substring(0, 4);
 
 		// Replace each letter in the string with two digits, thereby expanding
-		// the
-		// string, where A = 10, B = 11, ..., Z = 35.
+		// the string, where A = 10, B = 11, ..., Z = 35.
 		StringBuilder numericAccountNumber = new StringBuilder();
 		for (int i = 0; i < newAccountNumber.length(); i++) {
 			numericAccountNumber.append(Character.getNumericValue(newAccountNumber.charAt(i)));
 		}
 
 		// Interpret the string as a decimal integer and compute the remainder
-		// of that
-		// number on division by 97.
+		// of that number on division by 97.
 		BigInteger ibanNumber = new BigInteger(numericAccountNumber.toString());		
 		return ibanNumber.mod(Constants.IBANNUMBER_MAGIC_NUMBER).intValue() == 1;
 	}
